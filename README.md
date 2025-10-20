@@ -20,3 +20,5 @@ python -m venv .venv
 . .venv/Scripts/Activate.ps1
 pip install -r requirements.txt
 python manage.py runserver
+
+Open the URL shown (usually http://127.0.0.1:8000). If you see the Django welcome page, close the server with Ctrl+C.
