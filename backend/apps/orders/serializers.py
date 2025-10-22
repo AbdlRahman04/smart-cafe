@@ -2,6 +2,7 @@ from rest_framework import serializers
 from apps.catalog.models import Item
 from apps.catalog.serializers import ItemSerializer
 from .models import Cart, CartItem
+from .models import Order, OrderItem
 
 
 class CartItemWriteSerializer(serializers.ModelSerializer):
@@ -35,3 +36,15 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ["id", "items", "total_minor", "updated_at"]
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["item_name", "unit_price_minor", "qty", "line_total_minor"]
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "status", "total_minor", "paid_minor", "pickup_time", "service_day", "created_at", "items"]
