@@ -1,0 +1,9 @@
+from django.urls import path
+from .views import CartView, CartItemsView, CartItemDetailView
+
+urlpatterns = [
+    # will add endpoints later
+    path("cart/", CartView.as_view(), name="cart"),
+    path("cart/items/", CartItemsView.as_view(), name="cart-items"),
+    path("cart/items/<int:pk>/", CartItemDetailView.as_view(), name="cart-item-detail"),
+]
