@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Register</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <div class="panel" style="max-width:480px;margin:40px auto;">
+      <h2>Create Account</h2>
+      <form id="regForm" class="grid" style="gap:10px">
+        <input id="username" placeholder="Username" required />
+        <input id="email" type="email" placeholder="Email" required />
+        <input id="password" type="password" placeholder="Password (min 6)" required />
+        <button class="btn" type="submit">Create account</button>
+        <p id="msg" style="color:var(--danger)"></p>
+      </form>
+      <p>Already have an account? <a class="link" href="./login.html">Log in</a></p>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks } from "../scripts/app.js";
+    import { register } from "../scripts/services/auth.js";
+
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+
+    const form = document.getElementById("regForm");
+    const msg = document.getElementById("msg");
+    form.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      msg.textContent = "";
+      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try{
+        await register(username, email, password);
+        // after successful registration, send user to login
+        window.location.href = "./login.html";
+      }catch(err){
+        msg.textContent = err.message || "Registration failed";
+      }
+    });
+  </script>
+</body>
+</html>

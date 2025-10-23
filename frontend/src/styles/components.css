@@ -1,0 +1,10 @@
+.header-wrap,.footer-wrap{max-width:1080px;margin:0 auto;padding:12px 20px}
+.hero{display:flex;flex-direction:column;align-items:center;gap:12px;padding:60px 20px;text-align:center}
+.hero h1{font-size:40px;margin:0}
+.card{background:var(--panel);border:1px solid #222;border-radius:var(--radius);padding:16px}
+.menu-card{display:flex;justify-content:space-between;align-items:center}
+.price{opacity:.8}
+.nav { display:flex; justify-content:space-between; align-items:center; }
+.nav a { margin-right:14px; }
+.nav-right a { margin-left:14px; }
+.wallet-pill { color:#2ecc71; font-weight:700; }

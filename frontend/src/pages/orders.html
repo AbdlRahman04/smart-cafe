@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Orders</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Your Orders</h1>
+    <div id="ordersContainer" class="grid"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
+    import { renderOrders } from "../scripts/controllers/ordersController.js";
+
+    requireAuth();
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+    updateWalletDisplay();
+
+    renderOrders().catch(err=>{
+      document.getElementById("ordersContainer").innerHTML =
+        `<div class="panel" style="border-color:#a00">
+           <strong>Failed to load orders:</strong> ${err.message}
+         </div>`;
+      console.error(err);
+    });
+  </script>
+</body>
+</html>

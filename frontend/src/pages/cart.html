@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Cart</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Your Cart</h1>
+    <div id="cartContainer" class="grid"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay} from "../scripts/app.js";
+    import { renderCart } from "../scripts/controllers/cartController.js";
+
+    requireAuth();
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+    updateWalletDisplay(); // <— Add this line
+
+    renderCart().catch(err=>{
+      document.getElementById("cartContainer").innerHTML =
+        `<div class="panel" style="border-color:#a00">
+           <strong>Failed to load cart:</strong> ${err.message}
+         </div>`;
+      console.error(err);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+#walletContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+#walletContainer .panel {
+  padding: 20px;
+  text-align: center;
+  background: var(--card-bg, #1a1a1a);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+#walletContainer input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #555);
+  background: var(--input-bg, #222);
+  color: var(--text-color, #fff);
+}
+
+#walletContainer .panel button[disabled] {
+  background: #555;
+  color: #bbb;
+  border: 1px solid #666;
+}

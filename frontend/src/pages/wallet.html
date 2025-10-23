@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Wallet</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <link rel="stylesheet" href="../styles/pages/wallet.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Wallet</h1>
+    <div id="walletContainer"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay} from "../scripts/app.js";
+    import { renderWallet } from "../scripts/controllers/walletController.js";
+
+    requireAuth();
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+    updateWalletDisplay(); // <— Add this line
+
+    renderWallet();
+  </script>
+</body>
+</html>

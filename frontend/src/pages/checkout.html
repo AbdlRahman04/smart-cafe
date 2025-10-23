@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Checkout</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Checkout</h1>
+    <div class="panel" style="max-width:520px">
+      <label for="pickup">Pickup time</label>
+      <input id="pickup" type="datetime-local" required />
+      <p id="msg" style="color:var(--danger)"></p>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="placeOrder" class="btn">Place Order</button>
+        <a href="./cart.html" class="btn secondary">Back to Cart</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, requireAuth } from "../scripts/app.js";
+    import { sessionStore } from "../scripts/stores/sessionStore.js";
+    import { OrderService } from "../scripts/services/order.js";
+
+    requireAuth();
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+
+    // default pickup = now + 30min
+    const input = document.getElementById("pickup");
+    const now = new Date(Date.now() + 30*60*1000);
+    input.value = new Date(now.getTime() - now.getTimezoneOffset()*60000)
+      .toISOString().slice(0,16); // yyyy-MM-ddTHH:mm
+
+    document.getElementById("placeOrder").addEventListener("click", async ()=>{
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+      const dtLocal = input.value; // "YYYY-MM-DDTHH:mm"
+      if (!dtLocal) { msg.textContent = "Please choose a pickup time."; return; }
+
+      // make an ISO string; backend will make it aware
+      const iso = new Date(dtLocal).toISOString().slice(0,19);
+      try {
+        const res = await OrderService.checkout(iso, sessionStore.getToken());
+        alert("Order placed!");
+        // maybe redirect to orders/history page later; for now back to menu
+        window.location.href = "./menu.html";
+      } catch (err) {
+        // Show backend messages like INSUFFICIENT_WALLET_FUNDS or ORDER_LIMIT_REACHED
+        msg.textContent = err.message || "Checkout failed";
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

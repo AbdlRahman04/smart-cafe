@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Home</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <section class="hero">
+    <h1>Welcome to Smart Café</h1>
+    <p>Pre-order meals, skip the line, and pay with your wallet.</p>
+    <div>
+      <a class="btn" href="./menu.html">Browse Menu</a>
+      <a class="btn secondary" href="./login.html" id="ctaLogin">Login</a>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="grid grid-3">
+      <div class="card"><h3>Fast</h3><p>Order ahead and pick up.</p></div>
+      <div class="card"><h3>Simple</h3><p>Wallet payments, one tap.</p></div>
+      <div class="card"><h3>Fresh</h3><p>Daily menu, real-time updates.</p></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, updateWalletDisplay} from "../scripts/app.js";
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+    updateWalletDisplay(); // <— Add this line
+
+  </script>
+</body>
+</html>

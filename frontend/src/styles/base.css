@@ -1,0 +1,15 @@
+@import "../styles/variables.css";
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+.container{max-width:1080px;margin:0 auto;padding:20px}
+.btn{background:var(--brand);border:none;color:#000;padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.secondary{background:#222;color:#fff}
+.link{color:var(--brand);text-decoration:none}
+.panel{background:var(--panel);border:1px solid #222;border-radius:var(--radius);padding:16px}
+.grid{display:grid;gap:12px}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+input,select{background:#0f1115;border:1px solid #222;color:var(--text);padding:10px;border-radius:10px;width:100%}
+header,footer{background:#0f1115;border-bottom:1px solid #222}
+nav a{color:var(--text);text-decoration:none;margin-right:14px}
+nav a.active{color:var(--brand)}
+h1,h2{margin:10px 0}

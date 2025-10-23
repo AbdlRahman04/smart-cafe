@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Menu</title>
+  <link rel="stylesheet" href="../styles/base.css" />
+  <link rel="stylesheet" href="../styles/components.css" />
+  <script src="../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Menu</h1>
+    <div id="menuContainer" class="grid"></div>
+    <p style="margin-top:10px">
+      <a class="btn" href="./cart.html">Go to Cart</a>
+    </p>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
+    import { renderMenu } from "../scripts/controllers/menuController.js";
+
+    requireAuth(); // redirect to login if no token
+    await inject("../components/header.html", "#header");
+    await inject("../components/footer.html", "#footer");
+    wireAuthLinks();
+    updateWalletDisplay(); // <— Add this line
+
+    renderMenu().catch(err=>{
+      alert("Failed to load menu: " + err.message);
+    });
+  </script>
+</body>
+</html>
