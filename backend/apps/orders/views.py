@@ -1,22 +1,18 @@
 from django.db import transaction
-from rest_framework import permissions, status
+from django.utils import timezone
+
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.utils import timezone
-
 from apps.wallet.models import Wallet, WalletTx
 from .models import Cart, CartItem, Order, OrderItem, OrderQuota
-from .serializers import OrderSerializer
-
-
-
 from .serializers import (
+    OrderSerializer,
     CartSerializer,
     CartItemWriteSerializer,
     CartItemReadSerializer,
 )
-
 
 def _get_or_create_cart(user):
     cart, _ = Cart.objects.get_or_create(user=user)
@@ -175,3 +171,11 @@ class CheckoutView(APIView):
 
         return Response({"ok": True, "message": "Order paid.",
                          "data": OrderSerializer(order).data}, status=status.HTTP_201_CREATED)
+        
+class MyOrdersView(generics.ListAPIView):
+    """Return the authenticated user's orders, newest first."""
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by("-created_at")

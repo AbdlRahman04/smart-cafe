@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Category, Item
 
 
@@ -14,3 +15,4 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "price_minor", "is_active")
     list_filter = ("category", "is_active")
     search_fields = ("name",)
+

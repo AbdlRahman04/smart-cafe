@@ -37,8 +37,8 @@ def healthz(_request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path("", root),                 # <— adds a root response
-    path("admin/", admin.site.urls),
+    path("", root),                                          # <— adds a root response
+    path("admin/", admin.site.urls),                         # Django Admin (back-office)
     path("api/healthz", healthz),
     path("api/accounts/", include("apps.accounts.urls")),
     path("api/catalog/", include("apps.catalog.urls")),
