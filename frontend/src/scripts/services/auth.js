@@ -13,6 +13,12 @@ export async function register(username, email, password) {
   return request(ENDPOINTS.REGISTER, "POST", { username, email, password });
 }
 
+export async function me() {
+  const token = sessionStore.getToken();
+  if (!token) throw new Error("Not authenticated");
+  return request(ENDPOINTS.ME, "GET", null, token);
+}
+
 export function logout() {
   sessionStore.clear();
   window.location.href = "./login.html";

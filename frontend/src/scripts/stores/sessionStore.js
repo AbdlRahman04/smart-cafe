@@ -4,3 +4,4 @@ export const sessionStore = {
   clear: () => localStorage.removeItem("token"),
   isLoggedIn: () => !!localStorage.getItem("token"),
 };
+

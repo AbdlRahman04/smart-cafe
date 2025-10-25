@@ -11,7 +11,7 @@
   <div id="header"></div>
 
   <section class="hero">
-    <h1>Welcome to Smart Café</h1>
+    <h1>Welcome to Smart Caféteria Ordering System</h1>
     <p>Pre-order meals, skip the line, and pay with your wallet.</p>
     <div>
       <a class="btn" href="./menu.html">Browse Menu</a>
@@ -30,12 +30,15 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, updateWalletDisplay} from "../scripts/app.js";
+    import { inject, wireAuthLinks, wireNavToggle, updateWalletDisplay, showAdminIfStaff } from "../scripts/app.js";
+
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
-    wireAuthLinks();
-    updateWalletDisplay(); // <— Add this line
 
+    wireNavToggle();
+    wireAuthLinks();
+    updateWalletDisplay();
+    showAdminIfStaff();
   </script>
 </body>
 </html>

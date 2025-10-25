@@ -19,10 +19,12 @@ export async function renderWallet() {
     <h3 id="balance">${money(wallet.balance_minor)}</h3>
     <hr />
     <div style="margin-top:1rem;">
-      <label for="amount">Top-up Amount (AED)</label>
-      <input id="amount" type="number" min="1" placeholder="Enter amount" />
-      <button id="topupBtn" class="btn" style="margin-top:10px;">Add Funds</button>
-      <p id="msg" style="color:var(--danger)"></p>
+
+ <label for="amount" style="display:block; margin-bottom:15px;">Top-up Amount (AED)</label>
+          <input id="amount" type="number" step="5" min="5" placeholder="Enter amount" />
+          <button id="topupBtn" class="btn" style="margin-top:15px;">Add Funds</button>
+          <p id="msg" style="color:var(--danger)"></p>
+
     </div>
     <hr />
     <div class="panel" style="margin-top:1rem;background:#222;border:1px dashed #444;">
