@@ -3,7 +3,7 @@ import { OrdersQuery } from "../services/order.js";
 
 const statusColors = {
   pending: "#f1c40f",
-  paid: "#2ecc71",
+  paid: "#55b47dff",
   preparing: "#3498db",
   ready: "#9b59b6",
   completed: "#27ae60",

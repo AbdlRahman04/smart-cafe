@@ -21,19 +21,39 @@
     import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
     import { renderOrders } from "../scripts/controllers/ordersController.js";
 
-    requireAuth();
-    await inject("../components/header.html", "#header");
-    await inject("../components/footer.html", "#footer");
-    wireAuthLinks();
-    updateWalletDisplay();
+    try {
+      // 1) Auth gate
+      requireAuth();
 
-    renderOrders().catch(err=>{
+      // 2) Inject header/footer (so nav exists before wiring)
+      await inject("../components/header.html", "#header");
+      await inject("../components/footer.html", "#footer");
+
+      // 3) Wire auth links
+      wireAuthLinks();
+
+      // 4) (Optional) Mobile nav toggle if present
+      try {
+        const mod = await import("../scripts/app.js");
+        if (typeof mod.wireNavToggle === "function") {
+          mod.wireNavToggle();
+        }
+      } catch {
+        // ignore if not exported yet
+      }
+
+      // 5) Update wallet badge/balance in header
+      updateWalletDisplay();
+
+      // 6) Render orders
+      await renderOrders();
+    } catch (err) {
+      console.error(err);
       document.getElementById("ordersContainer").innerHTML =
         `<div class="panel" style="border-color:#a00">
-           <strong>Failed to load orders:</strong> ${err.message}
+           <strong>Failed to load orders:</strong> ${err?.message || err}
          </div>`;
-      console.error(err);
-    });
+    }
   </script>
 </body>
 </html>

@@ -14,48 +14,48 @@
     <div class="panel" style="max-width:420px;margin:40px auto;">
       <h2>Login</h2>
       <form id="loginForm" class="grid" style="gap:10px">
-
         <input id="username" placeholder="Username" required />
         <input id="password" type="password" placeholder="Password" required />
         <button class="btn" type="submit">Login</button>
         <p id="error" style="color:var(--danger)"></p>
       </form>
-        <p>New here? <a class="link" href="./register.html">Create an account</a></p>
+      <p>New here? <a class="link" href="./register.html">Create an account</a></p>
     </div>
   </div>
-
-
 
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks } from "../scripts/app.js";
+    import { inject, wireAuthLinks, wireNavToggle } from "../scripts/app.js";
     import { request } from "../scripts/utils/http.js";
     import { ENDPOINTS } from "../scripts/config/constants.js";
     import { sessionStore } from "../scripts/stores/sessionStore.js";
 
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
+    wireNavToggle();
     wireAuthLinks();
 
     if (sessionStore.isLoggedIn()) window.location.replace("./menu.html");
 
     const form = document.getElementById("loginForm");
     const errEl = document.getElementById("error");
-    form.addEventListener("submit", async (e)=>{
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errEl.textContent = "";
-      const username = document.getElementById("username").value;
+
+      const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
-      try{
+
+      try {
         const data = await request(ENDPOINTS.LOGIN, "POST", { username, password });
         sessionStore.setToken(data.token);
         window.location.href = "./menu.html";
-      }catch(err){
+      } catch (err) {
         errEl.textContent = err.message || "Login failed";
       }
     });
   </script>
 </body>
 </html>
-

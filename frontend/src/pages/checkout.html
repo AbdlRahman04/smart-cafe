@@ -33,6 +33,7 @@
     requireAuth();
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
+    
     wireAuthLinks();
 
     // default pickup = now + 30min

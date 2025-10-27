@@ -19,16 +19,39 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay} from "../scripts/app.js";
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
     import { renderWallet } from "../scripts/controllers/walletController.js";
 
-    requireAuth();
-    await inject("../components/header.html", "#header");
-    await inject("../components/footer.html", "#footer");
-    wireAuthLinks();
-    updateWalletDisplay(); // <— Add this line
+    try {
+      // 1) Guard route
+      requireAuth();
 
-    renderWallet();
+      // 2) Inject header/footer so nav elements exist
+      await inject("../components/header.html", "#header");
+      await inject("../components/footer.html", "#footer");
+
+      // 3) Auth-related header links
+      wireAuthLinks();
+
+      // 4) (Optional) Mobile nav toggle, if exported
+      try {
+        const mod = await import("../scripts/app.js");
+        if (typeof mod.wireNavToggle === "function") {
+          mod.wireNavToggle();
+        }
+      } catch {
+        // silent: not present yet
+      }
+
+      // 5) Refresh wallet badge/balance in header
+      updateWalletDisplay();
+
+      // 6) Render wallet page content
+      await renderWallet();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load wallet: " + (err?.message || err));
+    }
   </script>
 </body>
 </html>

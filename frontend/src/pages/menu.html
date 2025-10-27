@@ -21,18 +21,43 @@
   <div id="footer"></div>
 
   <script type="module">
+
     import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
     import { renderMenu } from "../scripts/controllers/menuController.js";
 
-    requireAuth(); // redirect to login if no token
-    await inject("../components/header.html", "#header");
-    await inject("../components/footer.html", "#footer");
-    wireAuthLinks();
-    updateWalletDisplay(); // <— Add this line
+    try {
+      // 1) Auth guard
+      requireAuth(); // redirects to login.html if no token
 
-    renderMenu().catch(err=>{
-      alert("Failed to load menu: " + err.message);
-    });
+      // 2) Inject header/footer first so nav elements exist
+      await inject("../components/header.html", "#header");
+      await inject("../components/footer.html", "#footer");
+
+      // 3) Hook up auth links in the header
+      wireAuthLinks();
+
+      // 4) (Optional) Mobile nav toggle — only if exported
+      try {
+        const mod = await import("../scripts/app.js"); // same module instance; safe to re-import
+        if (typeof mod.wireNavToggle === "function") {
+          mod.wireNavToggle();
+        }
+      } catch {
+        // no-op: wireNavToggle not present or not exported yet
+      }
+
+      // 5) Update wallet display (balance, etc.)
+      updateWalletDisplay();
+
+      // 6) Render the menu
+      await renderMenu();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load menu: " + (err?.message || err));
+
+      
+
+    }
   </script>
 </body>
 </html>
