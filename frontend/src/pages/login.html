@@ -26,7 +26,7 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, wireNavToggle } from "../scripts/app.js";
+    import { inject, wireAuthLinks, wireNavToggle, wireCartDrawer } from "../scripts/app.js";
     import { request } from "../scripts/utils/http.js";
     import { ENDPOINTS } from "../scripts/config/constants.js";
     import { sessionStore } from "../scripts/stores/sessionStore.js";
@@ -34,6 +34,7 @@
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
     wireNavToggle();
+    wireCartDrawer();
     wireAuthLinks();
 
     if (sessionStore.isLoggedIn()) window.location.replace("./menu.html");

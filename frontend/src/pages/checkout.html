@@ -11,14 +11,82 @@
   <div id="header"></div>
 
   <div class="container">
+    <div style="margin-bottom: 16px;">
+      <a href="./menu.html" style="color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+        <span>←</span> Back to Menu
+      </a>
+    </div>
+    
     <h1>Checkout</h1>
-    <div class="panel" style="max-width:520px">
-      <label for="pickup">Pickup time</label>
-      <input id="pickup" type="datetime-local" required />
-      <p id="msg" style="color:var(--danger)"></p>
-      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button id="placeOrder" class="btn">Place Order</button>
-        <a href="./cart.html" class="btn secondary">Back to Cart</a>
+    
+    <div id="errorMsg" style="display: none; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; color: #e74c3c;"></div>
+    <div id="successMsg" style="display: none; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; color: #2ecc71;"></div>
+
+    <div class="checkout-layout">
+      <!-- Left Column -->
+      <div class="checkout-left">
+        <!-- Pickup Time Section -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <span style="font-size: 20px; margin-right: 8px;">🕐</span>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Select Pickup Time</h2>
+          </div>
+          <div id="pickupTimeSlots" class="time-slots-grid">
+            <!-- Time slots will be generated here -->
+          </div>
+        </div>
+
+        <!-- Payment Method Section -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <span style="font-size: 20px; margin-right: 8px;">💳</span>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Payment Method</h2>
+          </div>
+          <div class="payment-options">
+            <label class="payment-option">
+              <input type="radio" name="paymentMethod" value="wallet" checked />
+              <div class="payment-option-content">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">👛</span>
+                  <span style="font-weight: 500;">Wallet</span>
+                </div>
+                <div style="font-size: 14px; color: var(--muted); margin-top: 4px;" id="walletBalance">Balance: 0 AED</div>
+              </div>
+            </label>
+            <label class="payment-option disabled">
+              <input type="radio" name="paymentMethod" value="card" disabled />
+              <div class="payment-option-content">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">💳</span>
+                  <span style="font-weight: 500;">Credit/Debit Card</span>
+                </div>
+                <div style="font-size: 14px; color: var(--muted); margin-top: 4px;">Coming soon</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="checkout-right">
+        <!-- Order Summary Section -->
+        <div class="checkout-section">
+          <h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Order Summary</h2>
+          <div id="orderSummaryItems">
+            <!-- Cart items will be loaded here -->
+            <p>Loading...</p>
+          </div>
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #222;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
+              <span>Total</span>
+              <span id="orderTotal" style="color: var(--brand);">0.00 AED</span>
+            </div>
+          </div>
+          <button id="placeOrder" class="place-order-btn">
+            <span style="margin-right: 8px;">✓</span>
+            Place Order
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -26,38 +94,330 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, requireAuth } from "../scripts/app.js";
+    import { inject, wireAuthLinks, requireAuth, wireCartDrawer, wireNavToggle } from "../scripts/app.js";
     import { sessionStore } from "../scripts/stores/sessionStore.js";
     import { OrderService } from "../scripts/services/order.js";
+    import { WalletService } from "../scripts/services/walletService.js";
+    import { customizationStore } from "../scripts/stores/customizationStore.js";
+    import { me } from "../scripts/services/auth.js";
 
     requireAuth();
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
     
     wireAuthLinks();
+    wireNavToggle();
+    wireCartDrawer();
 
-    // default pickup = now + 30min
-    const input = document.getElementById("pickup");
-    const now = new Date(Date.now() + 30*60*1000);
-    input.value = new Date(now.getTime() - now.getTimezoneOffset()*60000)
-      .toISOString().slice(0,16); // yyyy-MM-ddTHH:mm
+    // Check if user is admin
+    let isAdminUser = false;
+    try {
+      const user = await me();
+      isAdminUser = user.is_staff || user.is_superuser;
+    } catch (err) {
+      console.error('Failed to fetch user data:', err);
+    }
 
-    document.getElementById("placeOrder").addEventListener("click", async ()=>{
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
-      const dtLocal = input.value; // "YYYY-MM-DDTHH:mm"
-      if (!dtLocal) { msg.textContent = "Please choose a pickup time."; return; }
+    // Helper functions
+    function money(minor) {
+      return (minor / 100).toFixed(2) + " AED";
+    }
 
-      // make an ISO string; backend will make it aware
-      const iso = new Date(dtLocal).toISOString().slice(0,19);
+    function formatTime(date) {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      const displayMinutes = minutes.toString().padStart(2, '0');
+      return `${displayHours}:${displayMinutes} ${ampm}`;
+    }
+
+    function formatDate(date) {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+    }
+
+    // Generate time slots for Mon-Fri (9am-8:30pm, 30-minute intervals)
+    // For admin users: generate slots for any day, any time
+    function generateTimeSlots() {
+      // Admin users can order at any time on any day
+      if (isAdminUser) {
+        return generateAdminTimeSlots();
+      }
+      
+      // Regular users: Mon-Fri, 9am-8:30pm only
+      const slots = [];
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTime = currentHour * 60 + currentMinute;
+      const endTime = 20 * 60 + 30; // 8:30 PM in minutes
+      
+      // Determine the start date
+      let startDate = new Date(now);
+      startDate.setHours(9, 0, 0, 0); // Set to 9 AM
+      
+      // If it's Saturday (6) or Sunday (0), start from next Monday
+      if (currentDay === 0) { // Sunday
+        startDate.setDate(now.getDate() + 1);
+      } else if (currentDay === 6) { // Saturday
+        startDate.setDate(now.getDate() + 2);
+      } else if (currentDay >= 1 && currentDay <= 5) {
+        // It's a weekday
+        // If current time is past 8:30 PM, move to next weekday
+        if (currentTime >= endTime) {
+          const daysUntilNextWeekday = currentDay === 5 ? 3 : 1; // If Friday, jump to Monday
+          startDate.setDate(now.getDate() + daysUntilNextWeekday);
+          startDate.setHours(9, 0, 0, 0);
+        } else {
+          // Start from today, beginning from the next 30-minute slot after current time
+          startDate = new Date(now);
+          // Round up to next 30-minute interval
+          const minutes = startDate.getMinutes();
+          const roundedMinutes = Math.ceil((minutes + 1) / 30) * 30;
+          if (roundedMinutes >= 60) {
+            startDate.setHours(startDate.getHours() + 1, 0, 0, 0);
+          } else {
+            startDate.setMinutes(roundedMinutes, 0, 0);
+          }
+          // If before 9 AM, start at 9 AM
+          if (startDate.getHours() < 9) {
+            startDate.setHours(9, 0, 0, 0);
+          }
+        }
+      }
+      
+      // Generate slots for up to 5 weekdays
+      let daysProcessed = 0;
+      let currentSlotDate = new Date(startDate);
+      
+      while (daysProcessed < 5 && slots.length < 48) {
+        const dayOfWeek = currentSlotDate.getDay();
+        
+        // Skip weekends
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          currentSlotDate.setDate(currentSlotDate.getDate() + 1);
+          currentSlotDate.setHours(9, 0, 0, 0);
+          continue;
+        }
+        
+        // Determine start hour and minute for this day
+        let startHour = 9;
+        let startMinute = 0;
+        const isToday = currentSlotDate.toDateString() === now.toDateString();
+        
+        if (isToday) {
+          // If it's today, start from the next available slot
+          startHour = currentSlotDate.getHours();
+          startMinute = currentSlotDate.getMinutes();
+          // Round up to next 30-minute interval
+          if (startMinute > 0) {
+            startMinute = startMinute > 30 ? 0 : 30;
+            if (startMinute === 0) startHour++;
+          } else {
+            startMinute = 0;
+          }
+        }
+        
+        // Generate time slots from calculated start time to 8:30 PM (30-minute intervals)
+        for (let hour = startHour; hour <= 20; hour++) {
+          const minuteStart = (hour === startHour && isToday) ? startMinute : 0;
+          for (let minute = minuteStart; minute <= 30; minute += 30) {
+            if (hour === 20 && minute > 30) break; // Stop at 8:30 PM
+            
+            const slotTime = new Date(currentSlotDate);
+            slotTime.setHours(hour, minute, 0, 0);
+            
+            // Only show future slots
+            if (slotTime > now) {
+              slots.push(slotTime);
+              if (slots.length >= 48) break; // Limit to 48 slots
+            }
+          }
+          if (slots.length >= 48) break;
+        }
+        
+        daysProcessed++;
+        currentSlotDate.setDate(currentSlotDate.getDate() + 1);
+      }
+      
+      return slots;
+    }
+
+    // Generate time slots for admin users (any day, any time)
+    function generateAdminTimeSlots() {
+      const slots = [];
+      const now = new Date();
+      
+      // Start from 30 minutes from now
+      const startTime = new Date(now);
+      startTime.setMinutes(Math.ceil((startTime.getMinutes() + 30) / 30) * 30);
+      startTime.setSeconds(0, 0);
+      
+      // Generate slots for the next 7 days, 30-minute intervals, 24 hours
+      let currentTime = new Date(startTime);
+      const endTime = new Date(now);
+      endTime.setDate(endTime.getDate() + 7);
+      
+      while (currentTime < endTime && slots.length < 100) {
+        slots.push(new Date(currentTime));
+        
+        // Move to next 30-minute slot
+        currentTime.setMinutes(currentTime.getMinutes() + 30);
+      }
+      
+      return slots;
+    }
+
+    // Render time slots
+    function renderTimeSlots() {
+      const container = document.getElementById("pickupTimeSlots");
+      const slots = generateTimeSlots();
+      const selectedSlot = container.dataset.selectedSlot;
+      
+      if (slots.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted);">No available time slots. Please check back later.</p>';
+        return;
+      }
+      
+      container.innerHTML = slots.map((slot, index) => {
+        const slotISO = slot.toISOString().slice(0, 16);
+        const isSelected = selectedSlot === slotISO;
+        return `
+          <button class="time-slot-btn ${isSelected ? 'selected' : ''}" 
+                  data-slot="${slotISO}" 
+                  data-full-date="${slot.toISOString()}"
+                  type="button">
+            <div class="time-slot-time">${formatTime(slot)}</div>
+            ${index === 0 || slots[index - 1].getDate() !== slot.getDate() ? 
+              `<div class="time-slot-date">${formatDate(slot)}</div>` : ''}
+          </button>
+        `;
+      }).join('');
+      
+      // Add click handlers
+      container.querySelectorAll('.time-slot-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          container.dataset.selectedSlot = btn.dataset.slot;
+        });
+      });
+    }
+
+    // Load and render order summary
+    async function loadOrderSummary() {
+      const container = document.getElementById("orderSummaryItems");
+      const totalEl = document.getElementById("orderTotal");
+      
       try {
-        const res = await OrderService.checkout(iso, sessionStore.getToken());
-        alert("Order placed!");
-        // maybe redirect to orders/history page later; for now back to menu
-        window.location.href = "./menu.html";
+        const token = sessionStore.getToken();
+        const cart = await OrderService.getCart(token);
+        
+        if (!cart.items || cart.items.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted);">Your cart is empty.</p>';
+          totalEl.textContent = "0.00 AED";
+          return;
+        }
+        
+        let customTotalMinor = 0;
+        const itemsHtml = cart.items.map(ci => {
+          const customization = customizationStore.get(ci.id);
+          const unitPriceMinor = customization ? customization.customPriceMinor : ci.item.price_minor;
+          const linePriceMinor = unitPriceMinor * ci.qty;
+          customTotalMinor += linePriceMinor;
+          
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #222;">
+              <div style="flex: 1;">
+                <div style="font-weight: 500; margin-bottom: 4px;">${ci.qty}x ${ci.item.name}</div>
+              </div>
+              <div style="font-weight: 600; color: var(--text);">${money(linePriceMinor)}</div>
+            </div>
+          `;
+        }).join('');
+        
+        container.innerHTML = itemsHtml;
+        
+        const displayTotalMinor = customTotalMinor > 0 && customTotalMinor !== cart.total_minor 
+          ? customTotalMinor 
+          : cart.total_minor;
+        totalEl.textContent = money(displayTotalMinor);
+        
       } catch (err) {
-        // Show backend messages like INSUFFICIENT_WALLET_FUNDS or ORDER_LIMIT_REACHED
-        msg.textContent = err.message || "Checkout failed";
+        container.innerHTML = `<p style="color: var(--danger);">Error loading cart: ${err.message}</p>`;
+        console.error(err);
+      }
+    }
+
+    // Load wallet balance
+    async function loadWalletBalance() {
+      try {
+        const wallet = await WalletService.getWallet();
+        const balanceEl = document.getElementById("walletBalance");
+        balanceEl.textContent = `Balance: ${money(wallet.balance_minor)}`;
+      } catch (err) {
+        console.error('Failed to load wallet:', err);
+      }
+    }
+
+    // Initialize
+    renderTimeSlots();
+    await loadOrderSummary();
+    await loadWalletBalance();
+
+    // Place order handler
+    document.getElementById("placeOrder").addEventListener("click", async () => {
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+      const slotsContainer = document.getElementById("pickupTimeSlots");
+      const selectedBtn = slotsContainer.querySelector('.time-slot-btn.selected');
+      
+      errorMsg.style.display = "none";
+      successMsg.style.display = "none";
+      
+      if (!selectedBtn) {
+        errorMsg.textContent = "Please select a pickup time.";
+        errorMsg.style.display = "block";
+        return;
+      }
+      
+      // Get the full ISO string and format it properly for backend
+      // The backend expects ISO8601 format: "2025-11-03T01:00:00" (naive format, Django will make it timezone-aware)
+      const fullDateStr = selectedBtn.dataset.fullDate;
+      if (!fullDateStr) {
+        errorMsg.textContent = "Invalid time slot selected. Please try again.";
+        errorMsg.style.display = "block";
+        return;
+      }
+      
+      // Parse the stored ISO string and reformat to YYYY-MM-DDTHH:mm:ss
+      const dateObj = new Date(fullDateStr);
+      if (isNaN(dateObj.getTime())) {
+        errorMsg.textContent = "Invalid date format. Please select a different time.";
+        errorMsg.style.display = "block";
+        return;
+      }
+      
+      // Format as YYYY-MM-DDTHH:mm:ss (remove milliseconds, keep as naive datetime string)
+      const pickupTimeISO = dateObj.toISOString().slice(0, 19);
+      
+      // Debug logging (remove in production)
+      console.log('Sending pickup_time:', pickupTimeISO);
+      
+      try {
+        const res = await OrderService.checkout(pickupTimeISO, sessionStore.getToken());
+        successMsg.textContent = "Order placed successfully! Redirecting to menu...";
+        successMsg.style.display = "block";
+        
+        setTimeout(() => {
+          window.location.href = "./menu.html";
+        }, 2000);
+      } catch (err) {
+        errorMsg.textContent = err.message || "Checkout failed";
+        errorMsg.style.display = "block";
         console.error(err);
       }
     });

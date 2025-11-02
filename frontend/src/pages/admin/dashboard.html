@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Café — Admin Dashboard</title>
+  <link rel="stylesheet" href="../../styles/base.css" />
+  <link rel="stylesheet" href="../../styles/components.css" />
+  <link rel="stylesheet" href="../../styles/pages/admin.css" />
+  <script src="../../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <div class="dashboard-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="dashboard-subtitle">Overview of cafeteria performance</p>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-value" id="totalOrders">0</div>
+          <div class="kpi-subtext" id="ordersToday">+0 today</div>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-value" id="totalRevenue">0</div>
+          <div class="kpi-subtext" id="revenueToday">+0 AED today</div>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Active Orders</div>
+          <div class="kpi-value" id="activeOrders">0</div>
+          <div class="kpi-subtext">Needs attention</div>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-content">
+          <div class="kpi-label">Avg Order</div>
+          <div class="kpi-value" id="avgOrder">0</div>
+          <div class="kpi-subtext">AED per order</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="chart-section">
+      <h2>Last 7 Days Performance</h2>
+      <div class="chart-container">
+        <canvas id="performanceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="orders-section">
+      <h2>Recent Orders</h2>
+      <div class="table-container">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Student</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Pickup Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 20px; color: var(--muted);">
+                Loading orders...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireAuthLinks, updateWalletDisplay, showAdminIfStaff } from "../../scripts/app.js";
+    import { requireAdminAuth } from "../../scripts/utils/adminAuth.js";
+    import { renderDashboard } from "../../scripts/controllers/adminDashboardController.js";
+
+    try {
+      // Check admin access
+      await requireAdminAuth();
+
+      // Inject header/footer
+      await inject("../../components/header.html", "#header");
+      await inject("../../components/footer.html", "#footer");
+
+      // Wire up auth links
+      wireAuthLinks();
+      updateWalletDisplay();
+      showAdminIfStaff();
+
+      // Render dashboard
+      await renderDashboard();
+    } catch (err) {
+      console.error(err);
+      document.body.innerHTML = `
+        <div class="container" style="text-align: center; padding: 40px;">
+          <h1>Access Denied</h1>
+          <p>You must be an administrator to access this page.</p>
+          <a href="../index.html" class="btn">Go to Home</a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
+

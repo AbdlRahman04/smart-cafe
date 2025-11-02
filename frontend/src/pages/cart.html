@@ -18,14 +18,16 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay} from "../scripts/app.js";
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay, wireCartDrawer, wireNavToggle } from "../scripts/app.js";
     import { renderCart } from "../scripts/controllers/cartController.js";
 
     requireAuth();
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
     wireAuthLinks();
-    updateWalletDisplay(); // <— Add this line
+    wireNavToggle();
+    wireCartDrawer();
+    updateWalletDisplay();
 
     renderCart().catch(err=>{
       document.getElementById("cartContainer").innerHTML =

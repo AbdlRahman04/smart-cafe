@@ -23,5 +23,9 @@ export const ENDPOINTS = {
   ORDERS: "/orders/orders",   // /api + this path => /api/orders/orders/
   ORDER_DETAIL: (id) => `/orders/${id}/`, // GET detail
 
+  // Admin endpoints
+  ADMIN_DASHBOARD: "/orders/admin/dashboard/",
+  ADMIN_ORDERS: "/orders/admin/orders/",
+  ADMIN_ORDER_UPDATE: (id) => `/orders/admin/orders/${id}/`,
 };
 

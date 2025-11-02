@@ -5,7 +5,7 @@
     <nav class="nav">
   <div class="nav-left">
     <button id="navToggle" class="nav-toggle" aria-label="Open menu">☰</button>
-    <a class="brand" href="./index.html">Smart Café</a>
+    <a class="brand" href="./index.html">AURAK Café</a>
   </div>
 
   <div id="navLinks" class="nav-links">
@@ -13,9 +13,17 @@
     <a href="./cart.html">Cart</a>
     <a href="./wallet.html">Wallet</a>
     <a href="./orders.html">Orders</a>
+    <a id="adminLink" href="./admin/dashboard.html" style="display:none">Admin</a>
     <span id="walletDisplay" class="wallet-pill">...</span>
     <a id="loginLink" href="./login.html">Login</a>
     <a id="logoutLink" href="#" style="display:none">Logout</a>
+    <button id="cartButton" class="cart-icon-btn" aria-label="Open cart">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+    </button>
   </div>
 </nav>
 
@@ -23,3 +31,23 @@
 
   </div>
 </header>
+
+<!-- Cart Drawer -->
+<div id="cartBackdrop" class="cart-backdrop" hidden aria-hidden="true"></div>
+<div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+  <div class="drawer-header">
+    <div class="drawer-header-content">
+      <svg class="drawer-cart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <div class="drawer-title-group">
+        <h2 class="drawer-title">Your Order</h2>
+        <p class="drawer-subtitle">Review your items and proceed to checkout</p>
+      </div>
+    </div>
+    <button id="cartClose" class="drawer-close" aria-label="Close cart">×</button>
+  </div>
+  <div class="drawer-body"></div>
+</div>

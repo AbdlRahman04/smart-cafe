@@ -27,28 +27,66 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks } from "../scripts/app.js";
+    import { inject, wireAuthLinks, wireNavToggle, wireCartDrawer } from "../scripts/app.js";
     import { register } from "../scripts/services/auth.js";
 
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
-    wireNavToggle();            // <— Regarding movile nav toggle function
+    wireNavToggle();
+    wireCartDrawer();
     wireAuthLinks();
 
     const form = document.getElementById("regForm");
     const msg = document.getElementById("msg");
-    form.addEventListener("submit", async (e)=>{
+    
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "";
-      const username = document.getElementById("username").value;
-      const email = document.getElementById("email").value;
+      
+      // Disable submit button to prevent double submission
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating account...";
+      
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      try{
-        await register(username, email, password);
-        // after successful registration, send user to login
+      
+      // Basic validation
+      if (!username || !email || !password) {
+        msg.textContent = "Please fill in all fields";
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+        return;
+      }
+      
+      try {
+        const result = await register(username, email, password);
+        console.log("Registration successful:", result);
+        
+        // Show success message
+        msg.style.color = "var(--success, green)";
+        msg.textContent = "Account created successfully! Redirecting to login...";
+        
+        // Redirect immediately - the browser should handle this
+        console.log("Registration successful, redirecting now...");
+        // Use both methods to ensure redirect works
         window.location.href = "./login.html";
-      }catch(err){
-        msg.textContent = err.message || "Registration failed";
+        
+        // Fallback after short delay in case the above doesn't work
+        setTimeout(() => {
+          console.log("Fallback redirect triggered...");
+          if (window.location.pathname.endsWith("register.html")) {
+            window.location.replace("./login.html");
+          }
+        }, 300);
+      } catch (err) {
+        console.error("Registration error:", err);
+        msg.style.color = "var(--danger)";
+        msg.textContent = err.message || "Registration failed. Please try again.";
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
       }
     });
   </script>

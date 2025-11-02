@@ -18,7 +18,7 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay, wireCartDrawer, wireNavToggle } from "../scripts/app.js";
     import { renderOrders } from "../scripts/controllers/ordersController.js";
 
     try {
@@ -29,18 +29,10 @@
       await inject("../components/header.html", "#header");
       await inject("../components/footer.html", "#footer");
 
-      // 3) Wire auth links
+      // 3) Wire auth links + toggles
       wireAuthLinks();
-
-      // 4) (Optional) Mobile nav toggle if present
-      try {
-        const mod = await import("../scripts/app.js");
-        if (typeof mod.wireNavToggle === "function") {
-          mod.wireNavToggle();
-        }
-      } catch {
-        // ignore if not exported yet
-      }
+      wireNavToggle();
+      wireCartDrawer();
 
       // 5) Update wallet badge/balance in header
       updateWalletDisplay();

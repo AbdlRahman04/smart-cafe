@@ -20,9 +20,24 @@ export async function request(endpoint, method = "GET", data = null, token = nul
     let msg = res.statusText;
     try {
       const j = await res.json();
-      msg = j.detail || j.message || msg;
+      // Handle various error response formats
+      if (j.detail) {
+        msg = j.detail;
+      } else if (j.error) {
+        msg = j.error;
+      } else if (j.message) {
+        msg = j.message;
+      } else if (typeof j === 'object') {
+        // Handle field-specific errors (e.g., {"username": ["error"], "email": ["error"]})
+        const errors = Object.entries(j)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('; ');
+        if (errors) {
+          msg = errors;
+        }
+      }
     } catch {}
-    throw new Error(msg);
+    throw new Error(msg || `Request failed with status ${res.status}`);
   }
   // allow empty 204
   if (res.status === 204) return null;

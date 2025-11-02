@@ -5,6 +5,7 @@
   <title>Smart Café — Menu</title>
   <link rel="stylesheet" href="../styles/base.css" />
   <link rel="stylesheet" href="../styles/components.css" />
+  <link rel="stylesheet" href="../styles/pages/menu.css" />
   <script src="../../public/app-config.js"></script>
 </head>
 <body>
@@ -12,17 +13,37 @@
 
   <div class="container">
     <h1>Menu</h1>
-    <div id="menuContainer" class="grid"></div>
-    <p style="margin-top:10px">
-      <a class="btn" href="./cart.html">Go to Cart</a>
-    </p>
+    
+    <!-- Search Bar -->
+    <div class="menu-search-wrapper">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search for dishes..." />
+      </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="category-filters" id="categoryFilters">
+      <button class="category-btn active" data-category="all">All Menu</button>
+    </div>
+
+    <!-- Menu Grid -->
+    <div id="menuContainer" class="menu-grid"></div>
+  </div>
+
+  <!-- Customization Modal -->
+  <div id="customizationModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <div id="modalBody"></div>
+    </div>
   </div>
 
   <div id="footer"></div>
 
   <script type="module">
 
-    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay } from "../scripts/app.js";
+    import { inject, wireAuthLinks, requireAuth, updateWalletDisplay, wireCartDrawer, wireNavToggle, updateCartCount } from "../scripts/app.js";
     import { renderMenu } from "../scripts/controllers/menuController.js";
 
     try {
@@ -33,21 +54,16 @@
       await inject("../components/header.html", "#header");
       await inject("../components/footer.html", "#footer");
 
-      // 3) Hook up auth links in the header
+      // 3) Hook up auth links in the header + nav/cart toggles
       wireAuthLinks();
+      wireNavToggle();
+      wireCartDrawer();
 
-      // 4) (Optional) Mobile nav toggle — only if exported
-      try {
-        const mod = await import("../scripts/app.js"); // same module instance; safe to re-import
-        if (typeof mod.wireNavToggle === "function") {
-          mod.wireNavToggle();
-        }
-      } catch {
-        // no-op: wireNavToggle not present or not exported yet
-      }
+      
 
       // 5) Update wallet display (balance, etc.)
       updateWalletDisplay();
+      updateCartCount();
 
       // 6) Render the menu
       await renderMenu();

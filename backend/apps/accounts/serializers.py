@@ -11,6 +11,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "email", "password")
         extra_kwargs = {"email": {"required": True}}
 
+    def validate_username(self, value):
+        """Trim whitespace from username"""
+        return value.strip() if value else value
+
+    def validate_email(self, value):
+        """Trim whitespace from email"""
+        return value.strip() if value else value
+
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data["username"],
@@ -22,4 +30,4 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "email", "is_staff", "is_active")
+        fields = ("id", "username", "email", "is_staff", "is_superuser", "is_active")

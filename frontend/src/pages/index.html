@@ -30,7 +30,7 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { inject, wireAuthLinks, wireNavToggle, updateWalletDisplay, showAdminIfStaff } from "../scripts/app.js";
+    import { inject, wireAuthLinks, wireNavToggle, wireCartDrawer, updateWalletDisplay, showAdminIfStaff, updateCartCount } from "../scripts/app.js";
 
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
@@ -39,7 +39,10 @@
     wireAuthLinks();
     updateWalletDisplay();
     showAdminIfStaff();
-    
+    wireNavToggle();
+    wireCartDrawer();
+    updateCartCount();
+
   </script>
 </body>
 </html>
