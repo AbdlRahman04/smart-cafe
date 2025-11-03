@@ -97,4 +97,20 @@ python manage.py runserver
 
 Open the URL shown (usually http://127.0.0.1:8000). If you see the Django welcome page, close the server with Ctrl+C.
 
+## 🌐 Network Access Setup
+
+Want to let friends access your Smart Café on the same network?
+
+**Quick Start:** See `QUICK_START_NETWORK.md` for fast setup!
+
+**Detailed Guide:** See `NETWORK_SETUP.md` for complete instructions.
+
+Key files created:
+- `start-network-server.bat` (Windows) - Double-click to start network server
+- `start-network-server.sh` (Mac/Linux) - Run `./start-network-server.sh`
+- `NETWORK_SETUP.md` - Complete guide with troubleshooting
+- `QUICK_START_NETWORK.md` - Quick reference card
+
+✅ **Registration is already enabled** - users can create accounts from any device!
+
 

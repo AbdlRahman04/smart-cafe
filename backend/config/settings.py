@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-65xq^-#qprr!^bu7sh6#z4w-ch(mqz=zkl#vo-tusl(0c!egdx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Allow access from network devices
+# Add your local IP address to allow friends/devices on the same network to access
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.16.82.148', '172.16.8.230']
+# For broader access on university network, you can also add wildcards:
+# ALLOWED_HOSTS = ['*']  # ⚠️ NOT RECOMMENDED for production!
 
 
 # Application definition
