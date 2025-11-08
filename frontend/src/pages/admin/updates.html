@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin — Updates & Announcements</title>
+  <link rel="stylesheet" href="../../styles/base.css" />
+  <link rel="stylesheet" href="../../styles/components.css" />
+  <script src="../../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Admin · Updates & Announcements</h1>
+    <p style="color:var(--muted);margin-top:-6px;">Only staff users can access this page.</p>
+
+    <div class="panel" style="max-width:720px;margin-top:12px;">
+      <label for="announcement" style="display:block;margin-bottom:8px;">New Announcement</label>
+      <textarea id="announcement" rows="4" placeholder="Type announcement text..." style="width:100%;"></textarea>
+      <div style="margin-top:10px;display:flex;gap:10px;">
+        <button id="postBtn" class="btn">Post</button>
+        <a class="btn secondary" href="./menu.html">Menu Editor</a>
+        <a class="btn secondary" href="./dashboard.html">Dashboard</a>
+      </div>
+      <p id="msg" style="color:var(--danger);"></p>
+    </div>
+
+    <div class="panel" style="max-width:720px;margin-top:12px;">
+      <h2>Recent Announcements</h2>
+      <ul id="list" style="margin:0;padding-left:18px;"></ul>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireNavToggle, wireCartDrawer, wireAuthLinks, updateWalletDisplay, showToast } from "../../scripts/app.js";
+    import { requireAdminAuth } from "../../scripts/utils/adminAuth.js";
+
+    await requireAdminAuth();
+    await inject("../../components/header.html", "#header");
+    await inject("../../components/footer.html", "#footer");
+    wireNavToggle();
+    wireAuthLinks();
+    updateWalletDisplay();
+    wireCartDrawer();
+
+    // Placeholder in-memory list for announcements
+    const list = document.getElementById('list');
+    const msg = document.getElementById('msg');
+    let data = JSON.parse(localStorage.getItem('admin:announcements') || '[]');
+    function save(){ localStorage.setItem('admin:announcements', JSON.stringify(data)); }
+    function render(){
+      if (!data.length){ list.innerHTML = '<li>No announcements yet</li>'; return; }
+      list.innerHTML = data.map((t,i)=>`<li style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <span>${t}</span>
+        <button class="btn secondary" data-del="${i}">Delete</button>
+      </li>`).join('');
+      list.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{
+        const idx = Number(btn.getAttribute('data-del'));
+        data.splice(idx,1);
+        save();
+        render();
+        showToast('Announcement deleted','success');
+      }));
+    }
+    render();
+
+    document.getElementById('postBtn').addEventListener('click', ()=>{
+      msg.textContent = '';
+      const val = document.getElementById('announcement').value.trim();
+      if (!val) { msg.textContent = 'Please enter a message.'; return; }
+      data.unshift(val);
+      save();
+      document.getElementById('announcement').value = '';
+      render();
+      showToast('Announcement posted', 'success');
+    });
+  </script>
+</body>
+</html>
+
+

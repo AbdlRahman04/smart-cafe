@@ -34,7 +34,7 @@ export async function renderOrders(){
   list.className = "grid";
   rows.forEach(o=>{
     const items = (o.items || []).map(i => `${i.item_name} × ${i.qty}`).join(", ");
-    const when = new Date(o.pickup_time).toLocaleString();
+    const when = new Date(o.pickup_time).toLocaleString('en-AE', { timeZone: 'Asia/Dubai' });
     const el = document.createElement("div");
     el.className = "panel";
     el.innerHTML = `

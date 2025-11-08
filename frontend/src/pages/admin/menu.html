@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin — Menu Editor</title>
+  <link rel="stylesheet" href="../../styles/base.css" />
+  <link rel="stylesheet" href="../../styles/components.css" />
+  <script src="../../../public/app-config.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1>Admin · Menu Editor</h1>
+    <p style="color:var(--muted);margin-top:-6px;">Only staff users can access this page.</p>
+
+    <div class="panel" style="margin-top:12px;">
+      <h2>Quick actions</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;">
+        <a class="btn" href="../menu.html">Open Customer Menu</a>
+        <a class="btn secondary" href="./updates.html">Announcements</a>
+        <a class="btn secondary" href="./dashboard.html">Dashboard</a>
+      </div>
+      <p>Toggle availability, edit price, or delete items below.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px;">
+      <h2>Items</h2>
+      <div id="itemsMount">Loading…</div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { inject, wireNavToggle, wireCartDrawer, wireAuthLinks, updateWalletDisplay, showToast } from "../../scripts/app.js";
+    import { requireAdminAuth } from "../../scripts/utils/adminAuth.js";
+    import { sessionStore } from "../../scripts/stores/sessionStore.js";
+    import { AdminCatalog } from "../../scripts/services/adminCatalog.js";
+
+    await requireAdminAuth();
+    await inject("../../components/header.html", "#header");
+    await inject("../../components/footer.html", "#footer");
+    wireNavToggle();
+    wireAuthLinks();
+    updateWalletDisplay();
+    wireCartDrawer();
+
+    async function renderItems(){
+      const mount = document.getElementById('itemsMount');
+      try{
+        const rows = await AdminCatalog.listItems(sessionStore.getToken());
+        if (!rows.length){ mount.textContent = 'No items.'; return; }
+        mount.innerHTML = `
+          <div class="grid">
+            ${rows.map(r=>`
+              <div class="panel" data-id="${r.id}">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+                  <div>
+                    <div style="font-weight:700">${r.name}</div>
+                    <div style="opacity:.8">${r.description || ''}</div>
+                    <div style="margin-top:6px;opacity:.8">Category: ${r.category?.name || r.category}</div>
+                  </div>
+                  <div style="text-align:right;min-width:220px;">
+                    <div><label>Price (AED): <input type="number" step="0.01" data-price value="${(r.price_minor/100).toFixed(2)}" style="width:90px"></label></div>
+                    <div style="margin-top:6px"><label><input type="checkbox" data-active ${r.is_active? 'checked':''}> Available</label></div>
+                    <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+                      <button class="btn" data-save>Save</button>
+                      <button class="btn secondary" data-delete>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>`).join('')}
+          </div>`;
+
+        mount.querySelectorAll('[data-save]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+          const card = e.target.closest('[data-id]');
+          const id = Number(card.getAttribute('data-id'));
+          const price = parseFloat(card.querySelector('[data-price]').value || '0');
+          const active = card.querySelector('[data-active]').checked;
+          await AdminCatalog.updateItem(id, { price_minor: Math.round(price*100), is_active: active }, sessionStore.getToken());
+          showToast('Item updated','success');
+        }));
+
+        mount.querySelectorAll('[data-delete]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+          const card = e.target.closest('[data-id]');
+          const id = Number(card.getAttribute('data-id'));
+          if (!confirm('Delete this item?')) return;
+          await AdminCatalog.deleteItem(id, sessionStore.getToken());
+          card.remove();
+          showToast('Item deleted','success');
+        }));
+      }catch(err){
+        mount.innerHTML = `<div class="panel" style="border-color:#a00">Failed to load items: ${err.message}</div>`;
+      }
+    }
+
+    renderItems();
+  </script>
+</body>
+</html>
+
+

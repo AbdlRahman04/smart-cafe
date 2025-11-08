@@ -27,5 +27,7 @@ export const ENDPOINTS = {
   ADMIN_DASHBOARD: "/orders/admin/dashboard/",
   ADMIN_ORDERS: "/orders/admin/orders/",
   ADMIN_ORDER_UPDATE: (id) => `/orders/admin/orders/${id}/`,
+  ADMIN_CATALOG_ITEMS: "/catalog/admin/items/",
+  ADMIN_CATALOG_CATEGORIES: "/catalog/admin/categories/",
 };
 

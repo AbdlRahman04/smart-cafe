@@ -95,7 +95,7 @@ export function wireCartDrawer() {
         bodyEl.innerHTML = `
           <div class="meal-plan-balance">
             <div class="meal-plan-balance-label">Wallet Balance</div>
-            <div class="meal-plan-balance-amount">$${money(walletBalance)}</div>
+            <div class="meal-plan-balance-amount">${money(walletBalance)} AED</div>
           </div>
           <div class="cart-empty-state">
             <p class="cart-empty-text">Failed to load cart. Please try again.</p>
@@ -116,7 +116,7 @@ export function wireCartDrawer() {
       const mealPlanSection = `
         <div class="meal-plan-balance">
           <div class="meal-plan-balance-label">Wallet Balance</div>
-          <div class="meal-plan-balance-amount">$${money(walletBalance)}</div>
+          <div class="meal-plan-balance-amount">${money(walletBalance)} AED</div>
         </div>
       `;
 
@@ -182,7 +182,7 @@ export function wireCartDrawer() {
                   <button class="drawer-qty-btn dec" data-id="${ci.id}">−</button>
                   <input class="drawer-qty-input" data-id="${ci.id}" type="number" min="1" value="${ci.qty}" />
                   <button class="drawer-qty-btn inc" data-id="${ci.id}">+</button>
-                  <div class="drawer-item-price">$${money(linePriceMinor)}</div>
+                  <div class="drawer-item-price">${money(linePriceMinor)} AED</div>
                 </div>
               </div>
             </div>
@@ -205,15 +205,15 @@ export function wireCartDrawer() {
             <hr class="drawer-divider" />
             <div class="drawer-summary-row">
               <span>Subtotal</span>
-              <span>$${money(displayTotalMinor)}</span>
+              <span>${money(displayTotalMinor)} AED</span>
             </div>
             <div class="drawer-summary-row">
               <span>Tax (8%)</span>
-              <span>$${tax.toFixed(2)}</span>
+              <span>${tax.toFixed(2)} AED</span>
             </div>
             <div class="drawer-summary-row drawer-total-row">
               <span>Total</span>
-              <span class="drawer-total-amount">$${total.toFixed(2)}</span>
+              <span class="drawer-total-amount">${total.toFixed(2)} AED</span>
             </div>
           </div>
         `;
@@ -241,7 +241,7 @@ export function wireCartDrawer() {
       bodyEl.innerHTML = `
         <div class="meal-plan-balance">
           <div class="meal-plan-balance-label">Wallet Balance</div>
-          <div class="meal-plan-balance-amount">$$0.00</div>
+          <div class="meal-plan-balance-amount">0.00 AED</div>
         </div>
         <div class="cart-empty-state">
           <p class="cart-empty-text">Failed to load cart. Please refresh the page.</p>

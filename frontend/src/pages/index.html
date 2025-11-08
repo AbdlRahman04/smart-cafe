@@ -11,19 +11,62 @@
   <div id="header"></div>
 
   <section class="hero">
-    <h1>Welcome to Smart Caféteria Ordering System</h1>
-    <p>Pre-order meals, skip the line, and pay with your wallet.</p>
+    <h1 id="heroTitle">Welcome to Smart Cafeteria Ordering System</h1>
+    <p id="heroSub">Order ahead, skip the line, and pay with your wallet.</p>
     <div>
-      <a class="btn" href="./menu.html">Browse Menu</a>
-      <a class="btn secondary" href="./login.html" id="ctaLogin">Login</a>
+      <a class="btn" href="./menu.html" id="browseBtn">Browse Menu</a>
+      <a class="btn secondary" href="./login.html" id="ctaLogin">Login / Continue Order</a>
     </div>
   </section>
 
   <div class="container">
-    <div class="grid grid-3">
-      <div class="card"><h3>Fast</h3><p>Order ahead and pick up.</p></div>
-      <div class="card"><h3>Simple</h3><p>Wallet payments, one tap.</p></div>
-      <div class="card"><h3>Fresh</h3><p>Daily menu, real-time updates.</p></div>
+    <!-- Quick Benefits -->
+    <div class="grid grid-3" style="margin-bottom:24px;">
+      <div class="card"><h3>Fast</h3><p>Order ahead and pick up without waiting.</p></div>
+      <div class="card"><h3>Simple</h3><p>One-tap wallet payments.</p></div>
+      <div class="card"><h3>Fresh</h3><p>Updated daily menu.</p></div>
+    </div>
+
+    <!-- Today's Highlights -->
+    <div class="grid grid-3" style="margin-bottom:24px;">
+      <div class="card" id="openStatus">
+        <h3>Today's Status</h3>
+        <p id="openCloseText">Checking hours…</p>
+        <small id="hoursNote">Hours: Mon–Fri, 9:00 AM – 8:30 PM</small>
+      </div>
+      <div class="card">
+        <h3>Today's Specials</h3>
+        <p>Chef’s recommendation: Arabic Coffee & Egg Sandwich combo.</p>
+        <small>Tip: Avoid peak 12:00–1:30 PM.</small>
+      </div>
+      <div class="card">
+        <h3>Announcements</h3>
+        <ul id="announcements" style="margin:0;padding-left:18px;">
+          <li>New meal combos available this week.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- How it Works -->
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>How it works</h2>
+      <ol style="margin:0 0 6px 18px;">
+        <li>Choose your meal</li>
+        <li>Pay with your wallet</li>
+        <li>Pick up at your time slot</li>
+      </ol>
+    </div>
+
+    <!-- Wallet Snapshot -->
+    <div class="panel" id="walletSnapshot" style="display:none;margin-bottom:24px;">
+      <h2>Your Wallet</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div><strong>Balance:</strong> <span id="homeBalance">—</span></div>
+        <div style="display:flex;gap:10px;">
+          <a class="btn" href="./wallet.html">Top up now</a>
+          <a class="btn secondary" href="./orders.html">View orders</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -31,6 +74,9 @@
 
   <script type="module">
     import { inject, wireAuthLinks, wireNavToggle, wireCartDrawer, updateWalletDisplay, showAdminIfStaff, updateCartCount } from "../scripts/app.js";
+    import { sessionStore } from "../scripts/stores/sessionStore.js";
+    import { request } from "../scripts/utils/http.js";
+    import { ENDPOINTS } from "../scripts/config/constants.js";
 
     await inject("../components/header.html", "#header");
     await inject("../components/footer.html", "#footer");
@@ -43,6 +89,62 @@
     wireCartDrawer();
     updateCartCount();
 
+    // Hero greeting and wallet snapshot
+    async function initHome() {
+      const title = document.getElementById("heroTitle");
+      const sub = document.getElementById("heroSub");
+      const loginCta = document.getElementById("ctaLogin");
+      const walletSnap = document.getElementById("walletSnapshot");
+      const balanceEl = document.getElementById("homeBalance");
+
+      if (!sessionStore.isLoggedIn()) {
+        // Keep defaults; show login button
+        loginCta.style.display = "inline-block";
+      } else {
+        try {
+          const me = await request(ENDPOINTS.ME, "GET", null, sessionStore.getToken());
+          title.textContent = `Hi ${me.username}!`;
+          sub.textContent = "Welcome back — continue your order or top up your wallet.";
+          loginCta.style.display = "none"; // hide login when logged in
+          // Show wallet snapshot
+          const wallet = await request(ENDPOINTS.WALLET, "GET", null, sessionStore.getToken());
+          balanceEl.textContent = (wallet.balance_minor / 100).toFixed(2) + " AED";
+          walletSnap.style.display = "block";
+        } catch (e) {
+          // if anything fails, keep defaults
+          console.error(e);
+        }
+      }
+    }
+
+    // Cafeteria open/closed status
+    function updateOpenStatus() {
+      const txt = document.getElementById("openCloseText");
+      try {
+        const now = new Date();
+        // Convert to Dubai time by using the browser's local time but only for simple rule
+        const day = now.getDay(); // 0 Sun .. 6 Sat
+        const minutes = now.getHours() * 60 + now.getMinutes();
+        const open = (day >= 1 && day <= 5) && (minutes >= 9*60) && (minutes <= 20*60 + 30);
+        txt.textContent = open ? "Open now • Mon–Fri 9:00 AM – 8:30 PM" : "Closed now • Mon–Fri 9:00 AM – 8:30 PM";
+      } catch {
+        txt.textContent = "Hours: Mon–Fri, 9:00 AM – 8:30 PM";
+      }
+    }
+
+    // Announcements (simple static list, can be wired to backend later)
+    (function renderAnnouncements(){
+      const el = document.getElementById("announcements");
+      if (!el) return;
+      const items = [
+        "Cafeteria closes early today at 7:30 PM.",
+        "New meal combos available this week.",
+      ];
+      el.innerHTML = items.map(i=>`<li>${i}</li>`).join("");
+    })();
+
+    updateOpenStatus();
+    await initHome();
   </script>
 </body>
 </html>
